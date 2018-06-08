@@ -20,12 +20,13 @@ import os
 from model import ft_net, ft_net_dense, PCB
 from random_erasing import RandomErasing
 import json
+import IPython
 
 ######################################################################
 # Options
 # --------
 parser = argparse.ArgumentParser(description='Training')
-parser.add_argument('--gpu_ids',default='0', type=str,help='gpu_ids: e.g. 0  0,1,2  0,2')
+parser.add_argument('--gpu_ids',default=None, nargs='+', type=int, help='gpu_ids: e.g. 0  0,1,2  0,2')
 parser.add_argument('--name',default='ft_ResNet50', type=str, help='output model name')
 parser.add_argument('--data_dir',default='/home/zzd/Market/pytorch',type=str, help='training dir path')
 parser.add_argument('--train_all', action='store_true', help='use all training data' )
@@ -39,24 +40,22 @@ opt = parser.parse_args()
 
 data_dir = opt.data_dir
 name = opt.name
-str_ids = opt.gpu_ids.split(',')
-gpu_ids = []
-for str_id in str_ids:
-    gid = int(str_id)
-    if gid >=0:
-        gpu_ids.append(gid)
-
-# set gpu ids
-if len(gpu_ids)>0:
-    torch.cuda.set_device(gpu_ids[0])
+#os.environ['CUDA_VISIBLE_DEVICES'] = opt.gpu_ids
+#str_ids = opt.gpu_ids.split(',')
+#gpu_ids = []
+#for str_id in str_ids:
+#    gid = int(str_id)
+#    if gid >=0:
+#        gpu_ids.append(gid)
+#
+## set gpu ids
+#if len(gpu_ids)>0:
+#    torch.cuda.set_device(gpu_ids[0])
 #print(gpu_ids[0])
 
-
-######################################################################
 # Load Data
 # ---------
 #
-
 transform_train_list = [
         #transforms.RandomResizedCrop(size=128, scale=(0.75,1.0), ratio=(0.75,1.3333), interpolation=3), #Image.BICUBIC)
         transforms.Resize(144, interpolation=3),
@@ -150,7 +149,7 @@ def train_model(model, criterion, optimizer, scheduler, num_epochs=25):
     for epoch in range(num_epochs):
         print('Epoch {}/{}'.format(epoch, num_epochs - 1))
         print('-' * 10)
-
+        save_network(model, epoch)
         # Each epoch has a training and validation phase
         for phase in ['train', 'val']:
             if phase == 'train':
@@ -215,7 +214,7 @@ def train_model(model, criterion, optimizer, scheduler, num_epochs=25):
             # deep copy the model
             if phase == 'val':
                 last_model_wts = model.state_dict()
-                if epoch%10 == 9:
+                if epoch%10 == 0:
                     save_network(model, epoch)
                 draw_curve(epoch)
 
@@ -258,7 +257,7 @@ def save_network(network, epoch_label):
     save_path = os.path.join('./model',name,save_filename)
     torch.save(network.cpu().state_dict(), save_path)
     if torch.cuda.is_available:
-        network.cuda(gpu_ids[0])
+        network.cuda(opt.gpu_ids[0])
 
 
 ######################################################################
@@ -279,9 +278,14 @@ if opt.PCB:
 print(model)
 
 if use_gpu:
-    model = model.cuda()
-
-criterion = nn.CrossEntropyLoss()
+    if len(opt.gpu_ids) > 1:
+        print(opt.gpu_ids)
+        model_wraped = nn.DataParallel(model, device_ids = opt.gpu_ids).cuda()
+    else:
+        model = model.cuda()
+if len(opt.gpu_ids) > 1:
+    model = model_wraped.module
+criterion = nn.CrossEntropyLoss().cuda()
 
 if not opt.PCB:
     ignored_params = list(map(id, model.model.fc.parameters() )) + list(map(id, model.classifier.parameters() ))
@@ -292,6 +296,7 @@ if not opt.PCB:
              {'params': model.classifier.parameters(), 'lr': 0.1}
          ], weight_decay=5e-4, momentum=0.9, nesterov=True)
 else:
+
     ignored_params = list(map(id, model.model.fc.parameters() ))
     ignored_params += (list(map(id, model.classifier0.parameters() )) 
                      +list(map(id, model.classifier1.parameters() ))
@@ -315,10 +320,8 @@ else:
              #{'params': model.classifier6.parameters(), 'lr': 0.01},
              #{'params': model.classifier7.parameters(), 'lr': 0.01}
          ], weight_decay=5e-4, momentum=0.9, nesterov=True)
-
 # Decay LR by a factor of 0.1 every 40 epochs
 exp_lr_scheduler = lr_scheduler.StepLR(optimizer_ft, step_size=30, gamma=0.1)
-
 ######################################################################
 # Train and evaluate
 # ^^^^^^^^^^^^^^^^^^
@@ -333,6 +336,6 @@ if not os.path.isdir(dir_name):
 with open('%s/opts.json'%dir_name,'w') as fp:
     json.dump(vars(opt), fp, indent=1)
 
-model = train_model(model, criterion, optimizer_ft, exp_lr_scheduler,
+model = train_model(model_wraped, criterion, optimizer_ft, exp_lr_scheduler,
                        num_epochs=40)
 
