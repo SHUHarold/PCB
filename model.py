@@ -1,8 +1,10 @@
 import torch
+import random
 import torch.nn as nn
 from torch.nn import init
 from torchvision import models
 from torch.autograd import Variable
+from torch.nn import functional as F
 
 ######################################################################
 def weights_init_kaiming(m):
@@ -26,13 +28,15 @@ def weights_init_classifier(m):
 # Defines the new fc layer and classification layer
 # |--Linear--|--bn--|--relu--|--Linear--|
 class ClassBlock(nn.Module):
-    def __init__(self, input_dim, class_num, num_bottleneck = 512):
+    def __init__(self, input_dim, class_num, dropout=True, relu=True, num_bottleneck=512):
         super(ClassBlock, self).__init__()
         add_block = []
         add_block += [nn.Linear(input_dim, num_bottleneck)] 
         add_block += [nn.BatchNorm1d(num_bottleneck)]
-        add_block += [nn.LeakyReLU(0.1)]
-        add_block += [nn.Dropout(p=0.5)]
+        if relu:
+            add_block += [nn.LeakyReLU(0.1)]
+        if dropout:
+            add_block += [nn.Dropout(p=0.5)]
         add_block = nn.Sequential(*add_block)
         add_block.apply(weights_init_kaiming)
 
@@ -47,7 +51,6 @@ class ClassBlock(nn.Module):
         x = self.add_block(x)
         x = self.classifier(x)
         return x
-
 # Define the ResNet50-based Model
 class ft_net(nn.Module):
 
@@ -193,6 +196,100 @@ class PCB_test(nn.Module):
         y = x.view(x.size(0),x.size(1),x.size(2))
         return y
 
+class MUB(nn.Module):
+    """
+    ResNet50 + Multi-branch
+    """
+    def __init__(self, num_classes, loss={'xent'}, use_contraloss=False, **kwargs):
+        super(MUB, self).__init__()
+        self.use_contraloss = use_contraloss
+        self.loss = loss
+        self.resnet50 = models.resnet50(pretrained=True)
+        self.base = nn.Sequential(*list(self.resnet50.children())[:-2])
+        self.bn = nn.BatchNorm2d(2048,eps=1e-05, momentum=0.1, affine=True)
+        self.classifier = nn.Linear(2048, num_classes)
+        self.part = 6 # the numbers of parts
+        self.scale = 30
+        self.avgpool = nn.AdaptiveAvgPool2d((self.part, 1))
+        self.dropout = nn.Dropout(p=0.5)
+        # remove the final downsample
+        self.resnet50.layer4[0].downsample[0].stride = (1,1)
+        self.resnet50.layer4[0].conv2.stride = (1,1)
+        # define 6 classifiers
+        for i in range(self.part):
+            name = 'classifier'+str(i)
+            setattr(self, name, ClassBlock(2048, num_classes, True, True, 512))
+    def forward(self, x):
+        x = self.resnet50.conv1(x)
+        x = self.resnet50.bn1(x)
+        x = self.resnet50.relu(x)
+        x = self.resnet50.maxpool(x)
+        x = self.resnet50.layer1(x)
+        x = self.resnet50.layer2(x)
+        x = self.resnet50.layer3(x)
+        x = self.resnet50.layer4(x)
+
+        # global feature
+        x_g = F.avg_pool2d(x, x.size()[2:])
+        if self.training:
+            x_g = self.bn(x_g)
+        f_g = x_g.view(x.size(0), -1)
+        f_g = self.dropout(f_g)
+        #f_g = f_g/torch.norm(f_g, 2, 1, keepdim=True)
+        #f_g = f_g * self.scale
+        y_g = self.classifier(f_g)
+        # cropped feature
+        cp_h = int(x.size(2)/2)
+        cp_w = int(x.size(3)/2)
+        if self.training:
+            start_h = random.randint(0, cp_h)
+            start_w = random.randint(0, cp_w)
+        else:
+            start_h = int(x.size(2)/4)
+            start_w = int(x.size(3)/4)
+        x_cp = x[:,:,start_h:start_h + cp_h, start_w:start_w+cp_w]
+        x_cp = F.avg_pool2d(x_cp, x_cp.size()[2:])
+        if self.training:
+            x_cp = self.bn(x_cp)
+        f_cp = x_cp.view(x_cp.size(0), -1)
+        f_cp = self.dropout(f_cp)
+        #f_cp = f_cp/torch.norm(f_cp, 2, 1, keepdim=True)
+        #f_cp = f_cp * self.scale
+        y_cp = self.classifier(f_cp)
+
+        # part feature
+        x_p = self.avgpool(x)
+        if self.training:
+            x_p = self.bn(x_p)
+        #x_p=x_p/torch.norm(x_p,2,1,keepdim=True) * self.scale
+        if not self.training:
+            return f_g, f_cp, x_p
+        x_p = self.dropout(x_p)
+        part = {}
+        predict = {}
+        # get six part feature batchsize*2048*6
+        for i in range(self.part):
+            part[i] = torch.squeeze(x_p[:,:,i])
+            name = 'classifier'+str(i)
+            c = getattr(self,name)
+            predict[i] = c(part[i])
+
+        # sum prediction
+        #y = predict[0]
+        #for i in range(self.part-1):
+        #    y += predict[i+1]
+        y_p = []
+        for i in range(self.part):
+            y_p.append(predict[i])
+        if self.loss == {'xent'}:
+            if self.use_contraloss:
+                return y_g, y_cp, y_p, f_g, f_cp
+            else:
+                return y_g, y_cp, y_p
+        elif self.loss == {'xent', 'htri'}:
+            return y_g, f_g, y_cp, f_cp, y_p, x_p
+        else:
+            raise KeyError('Unsupported loss: {}'.format(self.loss))
 # debug model structure
 #net = ft_net(751)
 net = ft_net_dense(751)
