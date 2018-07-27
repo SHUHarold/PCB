@@ -9,18 +9,17 @@ import json
 import IPython
 import argparse
 import numpy as np
-import matplotlib
-matplotlib.use('agg')
+#import matplotlib
+#matplotlib.use('agg')
 import os.path as osp
 from PIL import Image
-import matplotlib.pyplot as plt
+#import matplotlib.pyplot as plt
 
 import torch
 import torchvision
 import torch.nn as nn
 import torch.optim as optim
 from torch.optim import lr_scheduler
-from torch.autograd import Variable
 import torch.backends.cudnn as cudnn
 from torchvision import datasets, models, transforms
 
@@ -29,6 +28,16 @@ from random_erasing import RandomErasing
 from model import ft_net, ft_net_dense, PCB, MUB
 from utils import AverageMeter, Logger, save_checkpoint
 
+version = torch.__version__
+
+if int(version[2]) <= 3:
+    from torch.autograd import Variable
+    flag = True
+    print("Now using pytoch version {}".format(version))
+else:
+    flag = False
+    print("Now using pytoch version {}".format(version))
+  
 ######################################################################
 # Options
 # --------
@@ -252,11 +261,19 @@ def train(epoch, model, criterion, optimizer, train_dataloaders, use_gpu):
             inputs, labels = data
             #print(inputs.shape)
             # wrap them in Variable
-            if use_gpu:
-                inputs = Variable(inputs.cuda())
-                labels = Variable(labels.cuda())
+            if flag:
+                if use_gpu:
+                    inputs = Variable(inputs.cuda())
+                    labels = Variable(labels.cuda())
+                else:
+                    inputs, labels = Variable(inputs), Variable(labels)
             else:
-                inputs, labels = Variable(inputs), Variable(labels)
+                if use_gpu:
+                    inputs = inputs.cuda()
+                    labels = labels.cuda()
+                else:
+                    inputs, labels = inputs, labels
+                
 
             # zero the parameter gradients
             optimizer.zero_grad()
@@ -284,7 +301,11 @@ def train(epoch, model, criterion, optimizer, train_dataloaders, use_gpu):
             if phase == 'train':
                 loss.backward()
                 optimizer.step()
-            losses.update(loss.data[0], labels.size(0))
+            if flag:
+                losses.update(loss.data[0], labels.size(0))
+            else:
+                losses.update(loss.item(), labels.size(0))
+                
             if (batch_index+1) % opt.print_freq == 0:
                 print('Epoch: [{0}][{1}/{2}]\t'
                 'Loss: {loss.val:.4f} ({loss.avg:.4f})\t'.format(epoch+1, batch_index+1,len(train_dataloaders[phase]),loss=losses))
@@ -293,20 +314,20 @@ def train(epoch, model, criterion, optimizer, train_dataloaders, use_gpu):
 ######################################################################
 # Draw Curve
 #---------------------------
-x_epoch = []
-fig = plt.figure()
-ax0 = fig.add_subplot(121, title="loss")
-ax1 = fig.add_subplot(122, title="top1err")
-def draw_curve(current_epoch):
-    x_epoch.append(current_epoch)
-    ax0.plot(x_epoch, y_loss['train'], 'bo-', label='train')
-    ax0.plot(x_epoch, y_loss['val'], 'ro-', label='val')
-    ax1.plot(x_epoch, y_err['train'], 'bo-', label='train')
-    ax1.plot(x_epoch, y_err['val'], 'ro-', label='val')
-    if current_epoch == 0:
-        ax0.legend()
-        ax1.legend()
-    fig.savefig( os.path.join('./model',name,'train.jpg'))
+#x_epoch = []
+#fig = plt.figure()
+#ax0 = fig.add_subplot(121, title="loss")
+#ax1 = fig.add_subplot(122, title="top1err")
+#def draw_curve(current_epoch):
+#    x_epoch.append(current_epoch)
+#    ax0.plot(x_epoch, y_loss['train'], 'bo-', label='train')
+#    ax0.plot(x_epoch, y_loss['val'], 'ro-', label='val')
+#    ax1.plot(x_epoch, y_err['train'], 'bo-', label='train')
+#    ax1.plot(x_epoch, y_err['val'], 'ro-', label='val')
+#    if current_epoch == 0:
+#        ax0.legend()
+#        ax1.legend()
+#    fig.savefig( os.path.join('./model',name,'train.jpg'))
 
 ######################################################################
 # Save model
@@ -340,11 +361,13 @@ def test(model, test_image_datasets, test_dataloaders, use_gpu, ranks=[1, 5, 10,
     q_camids,q_pids = get_id(q_path)
     for batch_idx, q_data in enumerate(queryloader):
         imgs, _ = q_data
-        if use_gpu: imgs = Variable(imgs.cuda())
+        if flag:
+            imgs = Variable(imgs.cuda())
+        else:
+            imgs = imgs.cuda()
 
         end = time.time()
         f_g, f_cp, y_p = model(imgs)
-        IPython.embed()
         y_p = torch.squeeze(y_p)
         f_p = y_p.view(y_p.size(0), -1)
         features = torch.cat((f_g, f_cp, f_p), 1)
@@ -366,7 +389,10 @@ def test(model, test_image_datasets, test_dataloaders, use_gpu, ranks=[1, 5, 10,
     end = time.time()
     for batch_idx, g_data in enumerate(galleryloader):
         imgs, _ = g_data
-        if use_gpu: imgs = Variable(imgs.cuda())
+        if flag:
+            imgs = Variable(imgs.cuda())
+        else:
+            imgs = imgs.cuda()
 
         end = time.time()
         f_g, f_cp, y_p = model(imgs)

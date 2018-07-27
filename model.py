@@ -3,7 +3,6 @@ import random
 import torch.nn as nn
 from torch.nn import init
 from torchvision import models
-from torch.autograd import Variable
 from torch.nn import functional as F
 
 ######################################################################
@@ -290,11 +289,3 @@ class MUB(nn.Module):
             return y_g, f_g, y_cp, f_cp, y_p, x_p
         else:
             raise KeyError('Unsupported loss: {}'.format(self.loss))
-# debug model structure
-#net = ft_net(751)
-net = ft_net_dense(751)
-#print(net)
-input = Variable(torch.FloatTensor(8, 3, 224, 224))
-output = net(input)
-print('net output size:')
-print(output.shape)
