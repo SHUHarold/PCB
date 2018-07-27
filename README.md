@@ -1,4 +1,5 @@
 ## Person_reID_baseline_pytorch
+### This code is reference by [here](https://github.com/layumi/Person_reID_baseline_pytorch)
 
 Baseline Code (with bottleneck) for Person-reID (pytorch).
 It is consistent with the new baseline result in [Beyond Part Models: Person Retrieval with Refined Part Pooling](https://arxiv.org/abs/1711.09349) and [Camera Style Adaptation for Person Re-identification](https://arxiv.org/abs/1711.10295).
@@ -11,6 +12,8 @@ Some of them (i.e. learning rate) are far from optimal. Do not hesitate to chang
 P.S. With similar structure, we arrived **Rank@1=87.74% mAP=69.46%** with Matconvnet. (batchsize=8, dropout=0.75) 
 You may refer to [Here](https://github.com/layumi/Person_reID_baseline_matconvnet).
 Different framework need to be tuned in a different way.
+
+**What's new:** [MUB] is added. Just only use '--MUB' to use this architecture.
 
 **What's new:**  [PCB](https://arxiv.org/abs/1711.09349) is added. You may use '--PCB' to use this model. It can achieve around **Rank@1=92.73% mAP=78.16%**. 
 ```bash
@@ -77,6 +80,12 @@ mkdir model
 
 ## Train
 Train a model by
+
+```bash
+Train MUB:
+python train_mub_test.py --data-dir <your_data_path> --MUB --max-epoch 60 --train-batch 32 --test-batch 32 --stepsize 20 --eval-step 20 --save-dir <the directory to save the train and test log and model> --gpu-ids 0,1 --train-all --train-log <the name of trian_log> --test-log <the name of test_log when only setting the mode test by --evaluate> --evaluate <set test mode> --resume <the path of save_model used for resuming>
+```
+
 ```bash
 python train.py --gpu_ids 0 --name ft_ResNet50 --train_all --batchsize 32  --data_dir your_data_path
 ```
