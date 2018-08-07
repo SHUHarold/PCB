@@ -1,0 +1,9 @@
+Currently using GPU 0
+==========Preparing trian dataset========
+Using all the train images
+========Preparing test dataset========
+Initializing model...
+Model size: 35.71218M
+Loading checkpoint from 'logs/resnet50-xent-mub-bn-512-market1501/best_model.pth.tar'
+Evaluate only
+(Pdb) (Pdb) (Pdb) (Pdb) (Pdb) (Pdb) 

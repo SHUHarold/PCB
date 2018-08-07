@@ -1,0 +1,161 @@
+Currently using GPU 0,1
+========Preparing test dataset========
+Initializing model...
+Model size: 31.40830M
+Loading checkpoint from 'model/mub-32/net_last.pth'
+Python 3.6.5 |Anaconda, Inc.| (default, Mar 29 2018, 18:21:58) 
+Type 'copyright', 'credits' or 'license' for more information
+IPython 6.3.1 -- An enhanced Interactive Python. Type '?' for help.
+
+
+Variable containing:
+ 39.9536
+[torch.cuda.FloatTensor of size 1 (GPU 0)]
+
+
+Variable containing:
+ 19.5039
+[torch.cuda.FloatTensor of size 1 (GPU 0)]
+
+
+Variable containing:
+ 9.1486
+[torch.cuda.FloatTensor of size 1 (GPU 0)]
+
+[0;31m---------------------------------------------------------------------------[0m
+[0;31mIndexError[0m                                Traceback (most recent call last)
+[0;32m/workspace/run/project/re-id/Person_reID_baseline_pytorch_pcb/test_mub.py[0m in [0;36m<module>[0;34m()[0m
+[0;32m----> 1[0;31m [0mtorch[0m[0;34m.[0m[0mnorm[0m[0;34m([0m[0my_p[0m[0;34m[[0m[0;36m0[0m[0;34m,[0m[0;34m:[0m[0;34m,[0m[0;36m0[0m[0;34m,[0m[0;36m1[0m[0;34m][0m[0;34m)[0m[0;34m[0m[0m
+[0m
+[0;32m/workspace/run/anaconda3/envs/python36/lib/python3.6/site-packages/torch/autograd/variable.py[0m in [0;36m__getitem__[0;34m(self, key)[0m
+[1;32m     76[0m                 [0;32mreturn[0m [0mIndexSelect[0m[0;34m.[0m[0mapply[0m[0;34m([0m[0mself[0m[0;34m,[0m [0;36m0[0m[0;34m,[0m [0mkey[0m[0;34m)[0m[0;34m[0m[0m
+[1;32m     77[0m             [0;31m# else fall through and raise an error in Index[0m[0;34m[0m[0;34m[0m[0m
+[0;32m---> 78[0;31m         [0;32mreturn[0m [0mIndex[0m[0;34m.[0m[0mapply[0m[0;34m([0m[0mself[0m[0;34m,[0m [0mkey[0m[0;34m)[0m[0;34m[0m[0m
+[0m[1;32m     79[0m [0;34m[0m[0m
+[1;32m     80[0m     [0;32mdef[0m [0m__setitem__[0m[0;34m([0m[0mself[0m[0;34m,[0m [0mkey[0m[0;34m,[0m [0mvalue[0m[0;34m)[0m[0;34m:[0m[0;34m[0m[0m
+
+[0;32m/workspace/run/anaconda3/envs/python36/lib/python3.6/site-packages/torch/autograd/_functions/tensor.py[0m in [0;36mforward[0;34m(ctx, i, index)[0m
+[1;32m     87[0m             [0mresult[0m [0;34m=[0m [0mi[0m[0;34m.[0m[0mindex[0m[0;34m([0m[0mctx[0m[0;34m.[0m[0mindex[0m[0;34m)[0m[0;34m[0m[0m
+[1;32m     88[0m         [0;32melse[0m[0;34m:[0m[0;34m[0m[0m
+[0;32m---> 89[0;31m             [0mresult[0m [0;34m=[0m [0mi[0m[0;34m.[0m[0mindex[0m[0;34m([0m[0mctx[0m[0;34m.[0m[0mindex[0m[0;34m)[0m[0;34m[0m[0m
+[0m[1;32m     90[0m             [0mctx[0m[0;34m.[0m[0mmark_shared_storage[0m[0;34m([0m[0;34m([0m[0mi[0m[0;34m,[0m [0mresult[0m[0;34m)[0m[0;34m)[0m[0;34m[0m[0m
+[1;32m     91[0m         [0;32mreturn[0m [0mresult[0m[0;34m[0m[0m
+
+[0;31mIndexError[0m: index 1 is out of range for dimension 1 (of size 1)
+
+
+Variable containing:
+ 30.1775
+[torch.cuda.FloatTensor of size 1 (GPU 0)]
+
+
+Variable containing:
+ 30.0795
+[torch.cuda.FloatTensor of size 1 (GPU 0)]
+
+
+Variable containing:
+ 30.1433
+[torch.cuda.FloatTensor of size 1 (GPU 0)]
+
+
+Variable containing:
+ 24.4340
+[torch.cuda.FloatTensor of size 1 (GPU 0)]
+
+
+Variable containing:
+ 13.7978
+[torch.cuda.FloatTensor of size 1 (GPU 0)]
+
+[0;31m---------------------------------------------------------------------------[0m
+[0;31mNameError[0m                                 Traceback (most recent call last)
+[0;32m/workspace/run/project/re-id/Person_reID_baseline_pytorch_pcb/test_mub.py[0m in [0;36m<module>[0;34m()[0m
+[0;32m----> 1[0;31m [0mq[0m[0;34m[0m[0m
+[0m
+[0;31mNameError[0m: name 'q' is not defined
+
+
+Python 3.6.5 |Anaconda, Inc.| (default, Mar 29 2018, 18:21:58) 
+Type 'copyright', 'credits' or 'license' for more information
+IPython 6.3.1 -- An enhanced Interactive Python. Type '?' for help.
+
+
+[0;31m---------------------------------------------------------------------------[0m
+[0;31mKeyboardInterrupt[0m                         Traceback (most recent call last)
+[0;32m/workspace/run/project/re-id/Person_reID_baseline_pytorch_pcb/test_mub.py[0m in [0;36m<module>[0;34m()[0m
+[1;32m    162[0m [0;34m[0m[0m
+[1;32m    163[0m [0;32mif[0m [0m__name__[0m [0;34m==[0m [0;34m'__main__'[0m[0;34m:[0m[0;34m[0m[0m
+[0;32m--> 164[0;31m     [0mmain[0m[0;34m([0m[0;34m)[0m[0;34m[0m[0m
+[0m
+[0;32m/workspace/run/project/re-id/Person_reID_baseline_pytorch_pcb/test_mub.py[0m in [0;36mmain[0;34m()[0m
+[1;32m     69[0m     [0mmodel[0m[0;34m.[0m[0mload_state_dict[0m[0;34m([0m[0mcheckpoint[0m[0;34m)[0m[0;34m[0m[0m
+[1;32m     70[0m     [0mmodel[0m [0;34m=[0m [0mnn[0m[0;34m.[0m[0mDataParallel[0m[0;34m([0m[0mmodel[0m[0;34m)[0m[0;34m.[0m[0mcuda[0m[0;34m([0m[0;34m)[0m[0;34m[0m[0m
+[0;32m---> 71[0;31m     [0mtest[0m[0;34m([0m[0mmodel[0m[0;34m,[0m [0mtest_image_datasets[0m[0;34m,[0m[0mtest_dataloaders[0m[0;34m,[0m  [0muse_gpu[0m[0;34m)[0m[0;34m[0m[0m
+[0m[1;32m     72[0m [0;34m[0m[0m
+[1;32m     73[0m [0;32mdef[0m [0mtest[0m[0;34m([0m[0mmodel[0m[0;34m,[0m [0mtest_image_datasets[0m[0;34m,[0m [0mtest_dataloaders[0m[0;34m,[0m [0muse_gpu[0m[0;34m,[0m [0mranks[0m[0;34m=[0m[0;34m[[0m[0;36m1[0m[0;34m,[0m [0;36m5[0m[0;34m,[0m [0;36m10[0m[0;34m,[0m [0;36m20[0m[0;34m][0m[0;34m)[0m[0;34m:[0m[0;34m[0m[0m
+
+[0;32m/workspace/run/project/re-id/Person_reID_baseline_pytorch_pcb/test_mub.py[0m in [0;36mtest[0;34m(model, test_image_datasets, test_dataloaders, use_gpu, ranks)[0m
+[1;32m     82[0m     [0mq_path[0m [0;34m=[0m [0mtest_image_datasets[0m[0;34m[[0m[0;34m'query'[0m[0;34m][0m[0;34m.[0m[0mimgs[0m[0;34m[0m[0m
+[1;32m     83[0m     [0mq_camids[0m[0;34m,[0m[0mq_pids[0m [0;34m=[0m [0mget_id[0m[0;34m([0m[0mq_path[0m[0;34m)[0m[0;34m[0m[0m
+[0;32m---> 84[0;31m     [0;32mfor[0m [0mbatch_idx[0m[0;34m,[0m [0mq_data[0m [0;32min[0m [0menumerate[0m[0;34m([0m[0mqueryloader[0m[0;34m)[0m[0;34m:[0m[0;34m[0m[0m
+[0m[1;32m     85[0m         [0mimgs[0m[0;34m,[0m [0m_[0m [0;34m=[0m [0mq_data[0m[0;34m[0m[0m
+[1;32m     86[0m         [0;32mif[0m [0muse_gpu[0m[0;34m:[0m [0mimgs[0m [0;34m=[0m [0mVariable[0m[0;34m([0m[0mimgs[0m[0;34m.[0m[0mcuda[0m[0;34m([0m[0;34m)[0m[0;34m)[0m[0;34m[0m[0m
+
+[0;32m/workspace/run/anaconda3/envs/python36/lib/python3.6/site-packages/torch/utils/data/dataloader.py[0m in [0;36m__next__[0;34m(self)[0m
+[1;32m    257[0m         [0;32mif[0m [0mself[0m[0;34m.[0m[0mnum_workers[0m [0;34m==[0m [0;36m0[0m[0;34m:[0m  [0;31m# same-process loading[0m[0;34m[0m[0m
+[1;32m    258[0m             [0mindices[0m [0;34m=[0m [0mnext[0m[0;34m([0m[0mself[0m[0;34m.[0m[0msample_iter[0m[0;34m)[0m  [0;31m# may raise StopIteration[0m[0;34m[0m[0m
+[0;32m--> 259[0;31m             [0mbatch[0m [0;34m=[0m [0mself[0m[0;34m.[0m[0mcollate_fn[0m[0;34m([0m[0;34m[[0m[0mself[0m[0;34m.[0m[0mdataset[0m[0;34m[[0m[0mi[0m[0;34m][0m [0;32mfor[0m [0mi[0m [0;32min[0m [0mindices[0m[0;34m][0m[0;34m)[0m[0;34m[0m[0m
+[0m[1;32m    260[0m             [0;32mif[0m [0mself[0m[0;34m.[0m[0mpin_memory[0m[0;34m:[0m[0;34m[0m[0m
+[1;32m    261[0m                 [0mbatch[0m [0;34m=[0m [0mpin_memory_batch[0m[0;34m([0m[0mbatch[0m[0;34m)[0m[0;34m[0m[0m
+
+[0;32m/workspace/run/anaconda3/envs/python36/lib/python3.6/site-packages/torch/utils/data/dataloader.py[0m in [0;36m<listcomp>[0;34m(.0)[0m
+[1;32m    257[0m         [0;32mif[0m [0mself[0m[0;34m.[0m[0mnum_workers[0m [0;34m==[0m [0;36m0[0m[0;34m:[0m  [0;31m# same-process loading[0m[0;34m[0m[0m
+[1;32m    258[0m             [0mindices[0m [0;34m=[0m [0mnext[0m[0;34m([0m[0mself[0m[0;34m.[0m[0msample_iter[0m[0;34m)[0m  [0;31m# may raise StopIteration[0m[0;34m[0m[0m
+[0;32m--> 259[0;31m             [0mbatch[0m [0;34m=[0m [0mself[0m[0;34m.[0m[0mcollate_fn[0m[0;34m([0m[0;34m[[0m[0mself[0m[0;34m.[0m[0mdataset[0m[0;34m[[0m[0mi[0m[0;34m][0m [0;32mfor[0m [0mi[0m [0;32min[0m [0mindices[0m[0;34m][0m[0;34m)[0m[0;34m[0m[0m
+[0m[1;32m    260[0m             [0;32mif[0m [0mself[0m[0;34m.[0m[0mpin_memory[0m[0;34m:[0m[0;34m[0m[0m
+[1;32m    261[0m                 [0mbatch[0m [0;34m=[0m [0mpin_memory_batch[0m[0;34m([0m[0mbatch[0m[0;34m)[0m[0;34m[0m[0m
+
+[0;32m/workspace/run/anaconda3/envs/python36/lib/python3.6/site-packages/torchvision-0.2.0-py3.6.egg/torchvision/datasets/folder.py[0m in [0;36m__getitem__[0;34m(self, index)[0m
+[1;32m    122[0m         [0mimg[0m [0;34m=[0m [0mself[0m[0;34m.[0m[0mloader[0m[0;34m([0m[0mpath[0m[0;34m)[0m[0;34m[0m[0m
+[1;32m    123[0m         [0;32mif[0m [0mself[0m[0;34m.[0m[0mtransform[0m [0;32mis[0m [0;32mnot[0m [0;32mNone[0m[0;34m:[0m[0;34m[0m[0m
+[0;32m--> 124[0;31m             [0mimg[0m [0;34m=[0m [0mself[0m[0;34m.[0m[0mtransform[0m[0;34m([0m[0mimg[0m[0;34m)[0m[0;34m[0m[0m
+[0m[1;32m    125[0m         [0;32mif[0m [0mself[0m[0;34m.[0m[0mtarget_transform[0m [0;32mis[0m [0;32mnot[0m [0;32mNone[0m[0;34m:[0m[0;34m[0m[0m
+[1;32m    126[0m             [0mtarget[0m [0;34m=[0m [0mself[0m[0;34m.[0m[0mtarget_transform[0m[0;34m([0m[0mtarget[0m[0;34m)[0m[0;34m[0m[0m
+
+[0;32m/workspace/run/anaconda3/envs/python36/lib/python3.6/site-packages/torchvision-0.2.0-py3.6.egg/torchvision/transforms/transforms.py[0m in [0;36m__call__[0;34m(self, img)[0m
+[1;32m     40[0m     [0;32mdef[0m [0m__call__[0m[0;34m([0m[0mself[0m[0;34m,[0m [0mimg[0m[0;34m)[0m[0;34m:[0m[0;34m[0m[0m
+[1;32m     41[0m         [0;32mfor[0m [0mt[0m [0;32min[0m [0mself[0m[0;34m.[0m[0mtransforms[0m[0;34m:[0m[0;34m[0m[0m
+[0;32m---> 42[0;31m             [0mimg[0m [0;34m=[0m [0mt[0m[0;34m([0m[0mimg[0m[0;34m)[0m[0;34m[0m[0m
+[0m[1;32m     43[0m         [0;32mreturn[0m [0mimg[0m[0;34m[0m[0m
+[1;32m     44[0m [0;34m[0m[0m
+
+[0;32m/workspace/run/anaconda3/envs/python36/lib/python3.6/site-packages/torchvision-0.2.0-py3.6.egg/torchvision/transforms/transforms.py[0m in [0;36m__call__[0;34m(self, pic)[0m
+[1;32m     59[0m             [0mTensor[0m[0;34m:[0m [0mConverted[0m [0mimage[0m[0;34m.[0m[0;34m[0m[0m
+[1;32m     60[0m         """
+[0;32m---> 61[0;31m         [0;32mreturn[0m [0mF[0m[0;34m.[0m[0mto_tensor[0m[0;34m([0m[0mpic[0m[0;34m)[0m[0;34m[0m[0m
+[0m[1;32m     62[0m [0;34m[0m[0m
+[1;32m     63[0m [0;34m[0m[0m
+
+[0;32m/workspace/run/anaconda3/envs/python36/lib/python3.6/site-packages/torchvision-0.2.0-py3.6.egg/torchvision/transforms/functional.py[0m in [0;36mto_tensor[0;34m(pic)[0m
+[1;32m     74[0m     [0mimg[0m [0;34m=[0m [0mimg[0m[0;34m.[0m[0mtranspose[0m[0;34m([0m[0;36m0[0m[0;34m,[0m [0;36m1[0m[0;34m)[0m[0;34m.[0m[0mtranspose[0m[0;34m([0m[0;36m0[0m[0;34m,[0m [0;36m2[0m[0;34m)[0m[0;34m.[0m[0mcontiguous[0m[0;34m([0m[0;34m)[0m[0;34m[0m[0m
+[1;32m     75[0m     [0;32mif[0m [0misinstance[0m[0;34m([0m[0mimg[0m[0;34m,[0m [0mtorch[0m[0;34m.[0m[0mByteTensor[0m[0;34m)[0m[0;34m:[0m[0;34m[0m[0m
+[0;32m---> 76[0;31m         [0;32mreturn[0m [0mimg[0m[0;34m.[0m[0mfloat[0m[0;34m([0m[0;34m)[0m[0;34m.[0m[0mdiv[0m[0;34m([0m[0;36m255[0m[0;34m)[0m[0;34m[0m[0m
+[0m[1;32m     77[0m     [0;32melse[0m[0;34m:[0m[0;34m[0m[0m
+[1;32m     78[0m         [0;32mreturn[0m [0mimg[0m[0;34m[0m[0m
+
+[0;32m/workspace/run/anaconda3/envs/python36/lib/python3.6/site-packages/torch/tensor.py[0m in [0;36mfloat[0;34m(self)[0m
+[1;32m     51[0m     [0;32mdef[0m [0mfloat[0m[0;34m([0m[0mself[0m[0;34m)[0m[0;34m:[0m[0;34m[0m[0m
+[1;32m     52[0m         [0;34mr"""Casts this tensor to float type"""[0m[0;34m[0m[0m
+[0;32m---> 53[0;31m         [0;32mreturn[0m [0mself[0m[0;34m.[0m[0mtype[0m[0;34m([0m[0mtype[0m[0;34m([0m[0mself[0m[0;34m)[0m[0;34m.[0m[0m__module__[0m [0;34m+[0m [0;34m'.FloatTensor'[0m[0;34m)[0m[0;34m[0m[0m
+[0m[1;32m     54[0m [0;34m[0m[0m
+[1;32m     55[0m     [0;32mdef[0m [0mhalf[0m[0;34m([0m[0mself[0m[0;34m)[0m[0;34m:[0m[0;34m[0m[0m
+
+[0;32m/workspace/run/anaconda3/envs/python36/lib/python3.6/site-packages/torch/_utils.py[0m in [0;36m_type[0;34m(self, new_type, async)[0m
+[1;32m     36[0m     [0;32mif[0m [0mnew_type[0m[0;34m.[0m[0mis_sparse[0m[0;34m:[0m[0;34m[0m[0m
+[1;32m     37[0m         [0;32mraise[0m [0mRuntimeError[0m[0;34m([0m[0;34m"Cannot cast dense tensor to sparse tensor"[0m[0;34m)[0m[0;34m[0m[0m
+[0;32m---> 38[0;31m     [0;32mreturn[0m [0mnew_type[0m[0;34m([0m[0mself[0m[0;34m.[0m[0msize[0m[0;34m([0m[0;34m)[0m[0;34m)[0m[0;34m.[0m[0mcopy_[0m[0;34m([0m[0mself[0m[0;34m,[0m [0masync[0m[0;34m)[0m[0;34m[0m[0m
+[0m[1;32m     39[0m [0;34m[0m[0m
+[1;32m     40[0m [0;34m[0m[0m
+
+[0;31mKeyboardInterrupt[0m: 

@@ -1,0 +1,9 @@
+Currently using GPU 0,1
+==========Preparing trian dataset========
+Using all the train images
+========Preparing test dataset========
+Initializing model...
+Model size: 35.71218M
+==> Start training
+Epoch: [1][10/405]	Loss: 19.8919 (19.9719)	
+Epoch: [1][20/405]	Loss: 19.7735 (19.7359)	
