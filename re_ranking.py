@@ -67,7 +67,7 @@ def re_ranking(q_g_dist, q_q_dist, g_g_dist, k1=20, k2=6, lambda_value=0.3):
         k_reciprocal_expansion_index = np.unique(k_reciprocal_expansion_index)
         try:
             weight = np.exp(-original_dist[i,k_reciprocal_expansion_index])
-            V[i,k_reciprocal_expansion_index] = 1.*weight/np.sum(weight)
+            V[i,k_reciprocal_expansion_index] = 1.*weight/(np.sum(weight)+1e-13)
         except Expection as E:
             import IPython; IPython.embed() 
 

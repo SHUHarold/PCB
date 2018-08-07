@@ -51,7 +51,7 @@ def compute_mAP(index, good_index, junk_index):
     return ap, cmc
 
 ######################################################################
-result = scipy.io.loadmat('pytorch_result.mat')
+result = scipy.io.loadmat('test_result/concat_pcb_template1_2_org3.mat')
 query_feature = result['query_f']
 query_cam = result['query_cam'][0]
 query_label = result['query_label'][0]
@@ -63,11 +63,13 @@ CMC = torch.IntTensor(len(gallery_label)).zero_()
 ap = 0.0
 #re-ranking
 print('calculate initial distance')
+query_feature = query_feature/np.sqrt(np.sum(np.square(query_feature[0])))
+gallery_feature = gallery_feature/np.sqrt(np.sum(np.square(gallery_feature[0])))
 q_g_dist = np.dot(query_feature, np.transpose(gallery_feature))
 q_q_dist = np.dot(query_feature, np.transpose(query_feature))
 g_g_dist = np.dot(gallery_feature, np.transpose(gallery_feature))
 since = time.time()
-print(q_g_dist,'\n',q_q_dist, '\n', g_g_dist)
+# print(q_g_dist,'\n',q_q_dist, '\n', g_g_dist)
 re_rank = re_ranking(q_g_dist, q_q_dist, g_g_dist)
 time_elapsed = time.time() - since
 print('Reranking complete in {:.0f}m {:.0f}s'.format(

@@ -1,7 +1,9 @@
 import scipy.io
+import argparse
 import torch
 import numpy as np
 import time
+import IPython
 
 #######################################################################
 # Evaluate
@@ -11,6 +13,8 @@ def evaluate(qf,ql,qc,gf,gl,gc):
     score = torch.mm(gf,query)
     score = score.squeeze(1).cpu()
     score = score.numpy()
+    # compute similarity
+    score = score/(2.4495*2.4495)
     # predict index
     index = np.argsort(score)  #from small to large
     index = index[::-1]
@@ -24,16 +28,14 @@ def evaluate(qf,ql,qc,gf,gl,gc):
     junk_index2 = np.intersect1d(query_index, camera_index)
     junk_index = np.append(junk_index2, junk_index1) #.flatten())
     
-    CMC_tmp = compute_mAP(index, good_index, junk_index)
-    return CMC_tmp
+    # CMC_tmp = compute_mAP(index, good_index, junk_index)
+    ap, cmc, index_copy = compute_mAP(index, good_index, junk_index)
+    return ap, cmc, index_copy, score
 
 
 def compute_mAP(index, good_index, junk_index):
     ap = 0
     cmc = torch.IntTensor(len(index)).zero_()
-    if good_index.size==0:   # if empty
-        cmc[0] = -1
-        return ap,cmc
 
     # remove junk_index
     mask = np.in1d(index, junk_index, invert=True)
@@ -44,6 +46,10 @@ def compute_mAP(index, good_index, junk_index):
     mask = np.in1d(index, good_index)
     rows_good = np.argwhere(mask==True)
     rows_good = rows_good.flatten()
+    index_copy = index[mask]
+    if good_index.size==0:   # if empty
+        cmc[0] = -1
+        return ap,cmc,index_copy
     
     cmc[rows_good[0]:] = 1
     for i in range(ngood):
@@ -55,10 +61,13 @@ def compute_mAP(index, good_index, junk_index):
             old_precision=1.0
         ap = ap + d_recall*(old_precision + precision)/2
 
-    return ap, cmc
+    return ap, cmc, index_copy
 
 ######################################################################
-result = scipy.io.loadmat('pytorch_result.mat')
+parser = argparse.ArgumentParser(description='Input Result')
+parser.add_argument('--result', type=str, help='please input result')
+opt = parser.parse_args()
+result = scipy.io.loadmat(opt.result)
 query_feature = torch.FloatTensor(result['query_f'])
 query_cam = result['query_cam'][0]
 query_label = result['query_label'][0]
@@ -74,9 +83,11 @@ CMC = torch.IntTensor(len(gallery_label)).zero_()
 ap = 0.0
 #print(query_label)
 for i in range(len(query_label)):
-    ap_tmp, CMC_tmp = evaluate(query_feature[i],query_label[i],query_cam[i],gallery_feature,gallery_label,gallery_cam)
+    ap_tmp, CMC_tmp, index_copy, score = evaluate(query_feature[i],query_label[i],query_cam[i],gallery_feature,gallery_label,gallery_cam)
     if CMC_tmp[0]==-1:
         continue
+    if gallery_label[index_copy[0]] == query_label[i]:
+        print(max(score))
     CMC = CMC + CMC_tmp
     ap += ap_tmp
     print(i, CMC_tmp[0])

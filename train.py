@@ -26,7 +26,8 @@ import IPython
 # Options
 # --------
 parser = argparse.ArgumentParser(description='Training')
-parser.add_argument('--gpu_ids',default=None, nargs='+', type=int, help='gpu_ids: e.g. 0  0,1,2  0,2')
+#parser.add_argument('--gpu_ids',default=None, nargs='+', type=int, help='gpu_ids: e.g. 0  0,1,2  0,2')
+parser.add_argument('--gpu_ids',default='0', type=str, help='gpu_ids: e.g. 0  0,1,2  0,2')
 parser.add_argument('--name',default='ft_ResNet50', type=str, help='output model name')
 parser.add_argument('--data_dir',default='/home/zzd/Market/pytorch',type=str, help='training dir path')
 parser.add_argument('--train_all', action='store_true', help='use all training data' )
@@ -40,7 +41,7 @@ opt = parser.parse_args()
 
 data_dir = opt.data_dir
 name = opt.name
-#os.environ['CUDA_VISIBLE_DEVICES'] = opt.gpu_ids
+os.environ['CUDA_VISIBLE_DEVICES'] = opt.gpu_ids
 #str_ids = opt.gpu_ids.split(',')
 #gpu_ids = []
 #for str_id in str_ids:
@@ -58,7 +59,7 @@ name = opt.name
 #
 transform_train_list = [
         #transforms.RandomResizedCrop(size=128, scale=(0.75,1.0), ratio=(0.75,1.3333), interpolation=3), #Image.BICUBIC)
-        transforms.Resize(144, interpolation=3),
+        transforms.Resize((288,144), interpolation=3),
         transforms.RandomCrop((256,128)),
         transforms.RandomHorizontalFlip(),
         transforms.ToTensor(),
@@ -149,7 +150,8 @@ def train_model(model, criterion, optimizer, scheduler, num_epochs=25):
     for epoch in range(num_epochs):
         print('Epoch {}/{}'.format(epoch, num_epochs - 1))
         print('-' * 10)
-        save_network(model, epoch)
+        #if epoch%10 == 9:
+        #    save_network(model, epoch)
         # Each epoch has a training and validation phase
         for phase in ['train', 'val']:
             if phase == 'train':
@@ -214,8 +216,8 @@ def train_model(model, criterion, optimizer, scheduler, num_epochs=25):
             # deep copy the model
             if phase == 'val':
                 last_model_wts = model.state_dict()
-                if epoch%10 == 0:
-                    save_network(model, epoch)
+                #if epoch%10 == 0:
+                 #   save_network(model, epoch)
                 draw_curve(epoch)
 
         print()
@@ -257,7 +259,7 @@ def save_network(network, epoch_label):
     save_path = os.path.join('./model',name,save_filename)
     torch.save(network.cpu().state_dict(), save_path)
     if torch.cuda.is_available:
-        network.cuda(opt.gpu_ids[0])
+        network.cuda()
 
 
 ######################################################################
@@ -278,12 +280,13 @@ if opt.PCB:
 print(model)
 
 if use_gpu:
-    if len(opt.gpu_ids) > 1:
+    if len(opt.gpu_ids) >= 1:
         print(opt.gpu_ids)
-        model_wraped = nn.DataParallel(model, device_ids = opt.gpu_ids).cuda()
+        model_wraped = nn.DataParallel(model).cuda()
     else:
         model = model.cuda()
-if len(opt.gpu_ids) > 1:
+        model_wraped = model.cuda()
+if len(opt.gpu_ids) >= 1:
     model = model_wraped.module
 criterion = nn.CrossEntropyLoss().cuda()
 
@@ -337,5 +340,5 @@ with open('%s/opts.json'%dir_name,'w') as fp:
     json.dump(vars(opt), fp, indent=1)
 
 model = train_model(model_wraped, criterion, optimizer_ft, exp_lr_scheduler,
-                       num_epochs=40)
+                       num_epochs=500)
 
