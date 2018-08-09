@@ -154,7 +154,7 @@ def main():
 
     ######################################################################
     # Prepare test data
-    if opt.evaluate:
+    if not opt.train_only:
         print("========Preparing test dataset========")
         transform_test_list = transforms.Compose([
                 transforms.Resize((384,192), interpolation=3),
