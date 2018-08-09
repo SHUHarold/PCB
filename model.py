@@ -72,6 +72,8 @@ class ft_net(nn.Module):
         x = self.model.layer4(x)
         x = self.model.avgpool(x)
         x = torch.squeeze(x)
+        if not self.training:
+            return x
         x = self.classifier(x)
         return x
 
@@ -90,6 +92,8 @@ class ft_net_dense(nn.Module):
     def forward(self, x):
         x = self.model.features(x)
         x = torch.squeeze(x)
+        if not self.training:
+            return x
         x = self.classifier(x)
         return x
     
@@ -125,34 +129,36 @@ class ft_net_middle(nn.Module):
 
 # Part Model proposed in Yifan Sun etal. (2018)
 class PCB(nn.Module):
-    def __init__(self, class_num ):
+    def __init__(self, class_num):
         super(PCB, self).__init__()
 
         self.part = 6 # We cut the pool5 to 6 parts
-        model_ft = models.resnet50(pretrained=True)
-        self.model = model_ft
+        self.resnet50 = models.resnet50(pretrained=True)
         self.avgpool = nn.AdaptiveAvgPool2d((self.part,1))
         self.dropout = nn.Dropout(p=0.5)
         # remove the final downsample
-        self.model.layer4[0].downsample[0].stride = (1,1)
-        self.model.layer4[0].conv2.stride = (1,1)
+        self.resnet50.layer4[0].downsample[0].stride = (1,1)
+        self.resnet50.layer4[0].conv2.stride = (1,1)
         # define 6 classifiers
         for i in range(self.part):
             name = 'classifier'+str(i)
             setattr(self, name, ClassBlock(2048, class_num, 256))
 
     def forward(self, x):
-        x = self.model.conv1(x)
-        x = self.model.bn1(x)
-        x = self.model.relu(x)
-        x = self.model.maxpool(x)
+        x = self.resnet50.conv1(x)
+        x = self.resnet50.bn1(x)
+        x = self.resnet50.relu(x)
+        x = self.resnet50.maxpool(x)
         
-        x = self.model.layer1(x)
-        x = self.model.layer2(x)
-        x = self.model.layer3(x)
-        x = self.model.layer4(x)
+        x = self.resnet50.layer1(x)
+        x = self.resnet50.layer2(x)
+        x = self.resnet50.layer3(x)
+        x = self.resnet50.layer4(x)
         x = self.avgpool(x)
         x = self.dropout(x)
+        if not self.training:
+            y = x.view(x.size(0), x.size(1), x.size(2))
+            return y
         part = {}
         predict = {}
         # get six part feature batchsize*2048*6
