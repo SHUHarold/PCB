@@ -30,6 +30,7 @@ from model import ft_net, ft_net_dense, PCB, MUB
 from utils import AverageMeter, Logger, save_checkpoint
 
 version = torch.__version__
+num_part = 6
 
 if int(version[2]) <= 3:
     from torch.autograd import Variable
@@ -62,6 +63,7 @@ parser.add_argument('--start-epoch', default=0, type=int,
 parser.add_argument('--train-batch', default=32, type=int,
                     help="train batch size")
 parser.add_argument('--test-batch', default=32, type=int, help="test batch size")
+parser.add_argument('--lr', default=0.01, type=float, help="init learning rate")
 parser.add_argument('--stepsize', default=40, type=int,
                     help="stepsize to decay learning rate (>0 means this is enabled)")
 parser.add_argument('--resume', type=str, default='', metavar='PATH')
@@ -179,9 +181,15 @@ def main():
     if opt.resume:
         print("Loading checkpoint from '{}'".format(opt.resume))
         checkpoint = torch.load(opt.resume)
-        model.load_state_dict(checkpoint['state_dict'])
+        IPython.embed()
+        for i in range(num_part):
+            del_key_w = 'classifier'+str(i)+'.classifier.0.weight'
+            del_key_b = 'classifier'+str(i)+'.classifier.0.bias'
+            del_cf_w = checkpoint['state_dict'].pop(del_key_w)
+            del_cf_b = checkpoint['state_dict'].pop(del_key_b)
+        model.load_state_dict(checkpoint['state_dict'], strict=False)
+        IPython.embed()
         # model.load_state_dict(checkpoint)
-        start_epoch = checkpoint['epoch']
     if use_gpu:
         model = nn.DataParallel(model).cuda()
     if opt.evaluate:
@@ -189,39 +197,40 @@ def main():
         test(model, test_image_datasets, test_dataloaders, use_gpu)
         return
     criterion = nn.CrossEntropyLoss().cuda()
-    if opt.PCB:
-        ignored_params = list(map(id, model.module.resnet50.fc.parameters() ))
-        ignored_params += (list(map(id, model.module.classifier0.parameters() ))
-                         +list(map(id, model.module.classifier1.parameters() ))
-                         +list(map(id, model.module.classifier2.parameters() ))
-                         +list(map(id, model.module.classifier3.parameters() ))
-                         +list(map(id, model.module.classifier4.parameters() ))
-                         +list(map(id, model.module.classifier5.parameters() ))
-                         #+list(map(id, model.classifier7.parameters() ))
-                          )
-        base_params = filter(lambda p: id(p) not in ignored_params, model.parameters())
-        optimizer = optim.SGD([
-                 {'params': base_params, 'lr': 0.01},
-                 {'params': model.module.resnet50.fc.parameters(), 'lr': 0.1},
-                 {'params': model.module.classifier0.parameters(), 'lr': 0.1},
-                 {'params': model.module.classifier1.parameters(), 'lr': 0.1},
-                 {'params': model.module.classifier2.parameters(), 'lr': 0.1},
-                 {'params': model.module.classifier3.parameters(), 'lr': 0.1},
-                 {'params': model.module.classifier4.parameters(), 'lr': 0.1},
-                 {'params': model.module.classifier5.parameters(), 'lr': 0.1},
-                 #{'params': model.classifier7.parameters(), 'lr': 0.01}
-             ], weight_decay=5e-4, momentum=0.9, nesterov=True)
-    else:
-        ignored_params = list(map(id, model.module.model.fc.parameters())) + list(map(id, model.module.classifier.parameters()))
-        base_params = filter(lambda p: id(p) not in ignored_params, model.parameters())
-        optimizer = optim.SGD([
-            {'params': base_params, 'lr': 0.01},
-            {'params': model.module.model.fc.parameters(), 'lr': 0.1},
-            {'params': model.module.classifier.parameters(), 'lr': 0.1}
-        ], weight_decay=5e-4, momentum=0.9, nesterov=True)
+#    if opt.PCB:
+#        ignored_params = list(map(id, model.module.resnet50.fc.parameters() ))
+#        ignored_params += (list(map(id, model.module.classifier0.parameters() ))
+#                         +list(map(id, model.module.classifier1.parameters() ))
+#                         +list(map(id, model.module.classifier2.parameters() ))
+#                         +list(map(id, model.module.classifier3.parameters() ))
+#                         +list(map(id, model.module.classifier4.parameters() ))
+#                         +list(map(id, model.module.classifier5.parameters() ))
+#                         #+list(map(id, model.classifier7.parameters() ))
+#                          )
+#        base_params = filter(lambda p: id(p) not in ignored_params, model.parameters())
+#        optimizer = optim.SGD([
+#                 {'params': base_params, 'lr': 0.01},
+#                 {'params': model.module.resnet50.fc.parameters(), 'lr': 0.1},
+#                 {'params': model.module.classifier0.parameters(), 'lr': 0.1},
+#                 {'params': model.module.classifier1.parameters(), 'lr': 0.1},
+#                 {'params': model.module.classifier2.parameters(), 'lr': 0.1},
+#                 {'params': model.module.classifier3.parameters(), 'lr': 0.1},
+#                 {'params': model.module.classifier4.parameters(), 'lr': 0.1},
+#                 {'params': model.module.classifier5.parameters(), 'lr': 0.1},
+#                 #{'params': model.classifier7.parameters(), 'lr': 0.01}
+#             ], weight_decay=5e-4, momentum=0.9, nesterov=True)
+#    else:
+#        ignored_params = list(map(id, model.module.model.fc.parameters())) + list(map(id, model.module.classifier.parameters()))
+#        base_params = filter(lambda p: id(p) not in ignored_params, model.parameters())
+#        optimizer = optim.SGD([
+#            {'params': base_params, 'lr': 0.01},
+#            {'params': model.module.model.fc.parameters(), 'lr': 0.1},
+#            {'params': model.module.classifier.parameters(), 'lr': 0.1}
+#        ], weight_decay=5e-4, momentum=0.9, nesterov=True)
     # Decay LR by a factor of 0.1 every 40 epochs
+    optimizer = optim.SGD(model.parameters(), lr=opt.lr, weight_decay=5e-4, momentum=0.9, nesterov=True)
     if opt.stepsize > 0:
-        scheduler = lr_scheduler.StepLR(optimizer, step_size=opt.stepsize, gamma=0.1)
+        scheduler = lr_scheduler.StepLR(optimizer, step_size=opt.stepsize, gamma=10)
 
     start_time = time.time()
     train_time = 0
@@ -323,7 +332,6 @@ def train(epoch, model, criterion, optimizer, train_dataloaders, use_gpu):
             else:
                 part = {}
                 sm = nn.Softmax(dim=1)
-                num_part = 6
                 for i in range(num_part):
                     part[i] = outputs[i]
                 loss = criterion(part[0], labels)
